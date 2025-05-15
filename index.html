@@ -1,1 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Login/Signup with Google</title>
+</head>
+<body>
+  <h2>Login / Signup with Google</h2>
+  <button id="loginBtn">Login with Google</button>
+
+  <script>
+    const clientId = '502214687020-0arr62kbk6oaiuq9p687sd4ij6fr9mjf.apps.googleusercontent.com';
+    const redirectUri = 'https://besioo.github.com/google_auth/index.html';
+    const scope = 'openid email profile';
+    const responseType = 'token'; // to get access_token directly
+
+    document.getElementById('loginBtn').addEventListener('click', () => {
+      const oauth2Endpoint = 'https://accounts.google.com/o/oauth2/v2/auth';
+
+      const authUrl = `${oauth2Endpoint}?client_id=${encodeURIComponent(clientId)}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=${encodeURIComponent(responseType)}&scope=${encodeURIComponent(scope)}&include_granted_scopes=true&prompt=select_account`;
+
+      // Redirect to Google's OAuth 2.0 server
+      window.location.href = authUrl;
+    });
+
+    // Optionally: Parse token if returned on this page (if this page is the redirect_uri)
+    window.onload = () => {
+      if (window.location.hash) {
+        const params = new URLSearchParams(window.location.hash.substring(1));
+        const accessToken = params.get('access_token');
+        if (accessToken) {
+          document.body.insertAdjacentHTML('beforeend', `<p>Access Token: <code>${accessToken}</code></p>`);
+          // You can now use this token to call Google APIs to fetch user info, etc.
+        }
+      }
+    };
+  </script>
+</body>
+</html>
 
