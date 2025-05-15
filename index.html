@@ -9,33 +9,63 @@
   <h2>Login / Signup with Google</h2>
   <button id="loginBtn">Login with Google</button>
 
+  <div id="userInfo" style="margin-top: 20px;"></div>
+
   <script>
     const clientId = '502214687020-0arr62kbk6oaiuq9p687sd4ij6fr9mjf.apps.googleusercontent.com';
-    const redirectUri = 'https://besioo.github.com/google_auth/index.html';
+    const redirectUri = 'https://besioo.github.io/google_auth/index.html';
     const scope = 'openid email profile';
-    const responseType = 'token'; // to get access_token directly
+    const responseType = 'token'; // get access token directly
 
     document.getElementById('loginBtn').addEventListener('click', () => {
       const oauth2Endpoint = 'https://accounts.google.com/o/oauth2/v2/auth';
 
       const authUrl = `${oauth2Endpoint}?client_id=${encodeURIComponent(clientId)}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=${encodeURIComponent(responseType)}&scope=${encodeURIComponent(scope)}&include_granted_scopes=true&prompt=select_account`;
 
-      // Redirect to Google's OAuth 2.0 server
+      // Redirect user to Google's OAuth 2.0 authorization endpoint
       window.location.href = authUrl;
     });
 
-    // Optionally: Parse token if returned on this page (if this page is the redirect_uri)
+    async function fetchUserInfo(token) {
+      try {
+        const response = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to fetch user info');
+        }
+
+        const data = await response.json();
+        displayUserInfo(data);
+      } catch (error) {
+        document.getElementById('userInfo').innerText = 'Error fetching user info: ' + error.message;
+      }
+    }
+
+    function displayUserInfo(data) {
+      const container = document.getElementById('userInfo');
+      container.innerHTML = `
+        <h3>User Info</h3>
+        <p><strong>Name:</strong> ${data.name}</p>
+        <p><strong>Email:</strong> ${data.email}</p>
+        <img src="${data.picture}" alt="User Picture" style="border-radius:50%; max-width:100px;" />
+      `;
+    }
+
+    // On page load, check for access token in URL fragment and fetch user info
     window.onload = () => {
       if (window.location.hash) {
         const params = new URLSearchParams(window.location.hash.substring(1));
         const accessToken = params.get('access_token');
+
         if (accessToken) {
-          document.body.insertAdjacentHTML('beforeend', `<p>Access Token: <code>${accessToken}</code></p>`);
-          // You can now use this token to call Google APIs to fetch user info, etc.
+          fetchUserInfo(accessToken);
         }
       }
     };
   </script>
 </body>
 </html>
-
